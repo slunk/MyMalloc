@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "thin_malloc.h"
+#include "heap.h"
 
 #define THIN_BLOCK(ptr) ((struct thin_block *) ptr - 1)
 #define BUFF(blk) ((char *) (blk + 1))

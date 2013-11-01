@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include "heap.h"
-#include "thin_malloc.h"
-#include "fat_malloc.h"
 
 #define HEAP_SIZE (1024 * 1024)
 
