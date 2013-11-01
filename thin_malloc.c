@@ -42,7 +42,7 @@ void *thin_malloc(size_t sz)
     if (sz % 8)
         sz = sz - (sz % 8) + 8;
     while (tmp) {
-        if (tmp->sz > sz) {
+        if (tmp->sz >= sz) {
             next = tmp->next;
             if (tmp->sz > sz + sizeof(*next)) {
                 next = (struct thin_block *) (BUFF(tmp) + sz);
@@ -76,6 +76,16 @@ void thin_coalesce_free_list()
     }
 }
 
+int coalesce(struct thin_block *blk)
+{
+    if ((struct thin_block *) (BUFF(blk) + blk->sz) == blk->next) {
+        blk->sz += blk->next->sz + sizeof(*blk->next);
+        blk->next = blk->next->next;
+        return 1;
+    }
+    return 0;
+}
+
 void thin_free(void *ptr)
 {
     struct thin_block *last = NULL;
@@ -87,10 +97,16 @@ void thin_free(void *ptr)
     THIN_BLOCK(ptr)->next = tmp;
     if (last) {
         last->next = THIN_BLOCK(ptr);
+        if (coalesce(last)) {
+            coalesce(last);
+        } else {
+            coalesce(THIN_BLOCK(ptr));
+        }
     } else {
         free_list = THIN_BLOCK(ptr);
+        coalesce(THIN_BLOCK(ptr));
     }
-    thin_coalesce_free_list();
+    //thin_coalesce_free_list();
 }
 
 struct alloc_algo thin_algo = {
